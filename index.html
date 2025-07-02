@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>España</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: url("ToroEspanol.png") no-repeat center center fixed;
+    background-size: cover;
+    height: 100vh;
+    color: #fff;
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 250px; /* deja espacio al toro */
+  }
+
+  .chat-container {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    margin-left: auto;
+    margin-right: 100px; /* antes estaba en 40px, ahora más hacia la izquierda */
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #f5f5f5;
+  }
+
+  #chatbox {
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #000;
+    border-radius: 10px;
+    padding: 10px;
+    height: 300px;
+    overflow-y: scroll;
+    margin-bottom: 10px;
+  }
+
+  #userInput {
+    width: calc(100% - 90px);
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    margin-right: 5px;
+    transition: background-color 0.3s ease;
+  }
+
+  #userInput:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  button {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: none;
+    background-color: #a00000;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #c20000;
+  }
+
+  #status {
+    margin: 10px 0;
+    font-size: 14px;
+  }
+
+  p {
+    margin: 5px 0;
+  }
+
+  strong {
+    color: #a00000;
+  }
+</style>
+
+
+</head>
+<body>
+  <div class="chat-container">
+    <h1>¡Habla sobre España!</h1>
+    <div id="chatbox"></div>
+    <div id="status"></div>
+    <div style="display: flex; margin-top: 10px;">
+      <input id="userInput" type="text" placeholder="Escribe tu mensaje..." />
+      <button onclick="sendMessage()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    let remainingAttempts = 5;
+    let timeLeft = 0;
+    let countdownInterval = null;
+
+    async function sendMessage() {
+      const inputElem = document.getElementById('userInput');
+      const input = inputElem.value.trim();
+      const chatbox = document.getElementById('chatbox');
+      const status = document.getElementById('status');
+
+      if (!input || inputElem.disabled) return;
+
+      chatbox.innerHTML += `<p><strong>Tú:</strong> ${input}</p>`;
+
+      const response = await fetch("http://localhost:3000/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: input })
+      });
+
+      const data = await response.json();
+      const reply = data.reply || "Error al obtener respuesta.";
+      chatbox.innerHTML += `<p><strong>Español:</strong> ${reply}</p>`;
+      inputElem.value = "";
+      chatbox.scrollTop = chatbox.scrollHeight;
+
+      if (typeof data.remainingAttempts !== 'undefined') {
+        remainingAttempts = data.remainingAttempts;
+        timeLeft = data.timeLeft;
+
+        updateInputState();
+        startCountdown();
+      }
+    }
+
+    function updateInputState() {
+      const inputElem = document.getElementById('userInput');
+      const status = document.getElementById('status');
+
+      if (remainingAttempts <= 0) {
+        inputElem.disabled = true;
+        inputElem.placeholder = "Espera a que se recargue el límite...";
+      } else {
+        inputElem.disabled = false;
+        inputElem.placeholder = "Escribe tu mensaje...";
+      }
+
+      status.innerText = `Intentos restantes: ${remainingAttempts} | Tiempo para reinicio: ${timeLeft}s`;
+    }
+
+    function startCountdown() {
+      clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateInputState();
+        } else {
+          remainingAttempts = 5;
+          clearInterval(countdownInterval);
+          updateInputState();
+        }
+      }, 1000);
+    }
+
+    window.onload = function () {
+      const chatbox = document.getElementById('chatbox');
+      chatbox.innerHTML += `<p><strong>Español:</strong> Preparado para hablar sobre el mejor país del mundo? Adelante, dime lo que quieras.</p>`;
+    };
+
+    document.getElementById("userInput").addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
