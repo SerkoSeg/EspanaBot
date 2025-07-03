@@ -78,9 +78,9 @@ app.post('/chat', async (req, res) => {
 
 // 7. Iniciar el servidor
 // Ruta raíz para responder a GET /
-app.get('/', (req, res) => {
-  res.send('Hola, servidor funcionando en Render!');
-});
+//app.get('/', (req, res) => {
+//  res.send('Hola, servidor funcionando en Render!');
+//});
 
 // Aquí van las demás rutas o lógica del chatbot
 const path = require('path');
