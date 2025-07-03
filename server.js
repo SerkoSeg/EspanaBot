@@ -83,6 +83,8 @@ app.get('/', (req, res) => {
 });
 
 // Aquí van las demás rutas o lógica del chatbot
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(port, () => {
   console.log(`Servidor escuchando en puerto ${port}`);
