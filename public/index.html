@@ -117,8 +117,8 @@
       if (!input || inputElem.disabled) return;
 
       chatbox.innerHTML += `<p><strong>Tú:</strong> ${input}</p>`;
-
-      const response = await fetch("http://localhost:3000/chat", {
+//http://localhost:3000
+      const response = await fetch("/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
